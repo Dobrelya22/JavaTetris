@@ -2,14 +2,28 @@
 
 import { WIDTH, HEIGHT, GRID_WIDTH, GRID_HEIGHT, BLOCK_SIZE, COLORS } from './constants.js';
 
+// Определяем смещения для сетки
+export const GRID_X_OFFSET = (WIDTH - GRID_WIDTH) / 2;
+export const GRID_Y_OFFSET = (HEIGHT - GRID_HEIGHT) / 2;
+
 // Функция для отрисовки сетки
 export function drawGrid(context, grid) {
   for (let y = 0; y < grid.length; y++) {
     for (let x = 0; x < grid[y].length; x++) {
       context.fillStyle = grid[y][x];
-      context.fillRect(50 + x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+      context.fillRect(
+        GRID_X_OFFSET + x * BLOCK_SIZE,
+        GRID_Y_OFFSET + y * BLOCK_SIZE,
+        BLOCK_SIZE,
+        BLOCK_SIZE
+      );
       context.strokeStyle = COLORS.WHITE;
-      context.strokeRect(50 + x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+      context.strokeRect(
+        GRID_X_OFFSET + x * BLOCK_SIZE,
+        GRID_Y_OFFSET + y * BLOCK_SIZE,
+        BLOCK_SIZE,
+        BLOCK_SIZE
+      );
     }
   }
 }
@@ -21,15 +35,15 @@ export function drawShape(context, shape, color, offsetX, offsetY) {
       if (shape[y][x]) {
         context.fillStyle = color;
         context.fillRect(
-          50 + (offsetX + x) * BLOCK_SIZE,
-          (offsetY + y) * BLOCK_SIZE,
+          GRID_X_OFFSET + (offsetX + x) * BLOCK_SIZE,
+          GRID_Y_OFFSET + (offsetY + y) * BLOCK_SIZE,
           BLOCK_SIZE,
           BLOCK_SIZE
         );
         context.strokeStyle = COLORS.WHITE;
         context.strokeRect(
-          50 + (offsetX + x) * BLOCK_SIZE,
-          (offsetY + y) * BLOCK_SIZE,
+          GRID_X_OFFSET + (offsetX + x) * BLOCK_SIZE,
+          GRID_Y_OFFSET + (offsetY + y) * BLOCK_SIZE,
           BLOCK_SIZE,
           BLOCK_SIZE
         );
@@ -40,115 +54,88 @@ export function drawShape(context, shape, color, offsetX, offsetY) {
 
 // Функция для отрисовки следующей фигуры и информации
 export function drawNextShape(context, shape, color, score, autoPlay, level) {
-  const nextBoxX = WIDTH - 140;
-  const nextBoxY = 50;
+  const nextBoxWidth = GRID_WIDTH * 0.4;
+  const nextBoxHeight = nextBoxWidth;
+  const nextBoxX = GRID_X_OFFSET + GRID_WIDTH + 20;
+  const nextBoxY = GRID_Y_OFFSET;
+
   context.strokeStyle = COLORS.WHITE;
-  context.strokeRect(nextBoxX, nextBoxY, 120, 120);
+  context.strokeRect(nextBoxX, nextBoxY, nextBoxWidth, nextBoxHeight);
 
   // Отрисовка заголовка "NEXT"
-  context.font = '24px Comic Sans MS';
+  context.font = `${BLOCK_SIZE}px Comic Sans MS`;
   context.fillStyle = COLORS.WHITE;
   context.textAlign = 'center';
-  context.fillText('NEXT', nextBoxX + 60, nextBoxY - 10);
+  context.fillText('NEXT', nextBoxX + nextBoxWidth / 2, nextBoxY - 10);
 
   // Отрисовка следующей фигуры
-  const offsetX = (120 - shape[0].length * BLOCK_SIZE) / 2;
-  const offsetY = (120 - shape.length * BLOCK_SIZE) / 2;
+  const shapeScale = BLOCK_SIZE * 0.8;
+  const offsetX = (nextBoxWidth - shape[0].length * shapeScale) / 2;
+  const offsetY = (nextBoxHeight - shape.length * shapeScale) / 2;
 
   for (let y = 0; y < shape.length; y++) {
     for (let x = 0; x < shape[y].length; x++) {
       if (shape[y][x]) {
         context.fillStyle = color;
         context.fillRect(
-          nextBoxX + offsetX + x * BLOCK_SIZE,
-          nextBoxY + offsetY + y * BLOCK_SIZE,
-          BLOCK_SIZE,
-          BLOCK_SIZE
+          nextBoxX + offsetX + x * shapeScale,
+          nextBoxY + offsetY + y * shapeScale,
+          shapeScale,
+          shapeScale
         );
         context.strokeStyle = COLORS.WHITE;
         context.strokeRect(
-          nextBoxX + offsetX + x * BLOCK_SIZE,
-          nextBoxY + offsetY + y * BLOCK_SIZE,
-          BLOCK_SIZE,
-          BLOCK_SIZE
+          nextBoxX + offsetX + x * shapeScale,
+          nextBoxY + offsetY + y * shapeScale,
+          shapeScale,
+          shapeScale
         );
       }
     }
   }
 
-  // Отображение очков
+  // Отображение очков и уровня
   context.fillStyle = COLORS.WHITE;
   context.textAlign = 'left';
-  context.font = '20px Comic Sans MS';
-  context.fillText('SCORE:', nextBoxX, nextBoxY + 160);
-  context.fillText(score.toString(), nextBoxX + 80, nextBoxY + 160);
-
-  // Отображение уровня
-  context.fillText(`Level: ${level}`, nextBoxX, nextBoxY + 190);
+  context.font = `${BLOCK_SIZE * 0.8}px Comic Sans MS`;
+  context.fillText(`SCORE: ${score}`, nextBoxX, nextBoxY + nextBoxHeight + 40);
+  context.fillText(`LEVEL: ${level}`, nextBoxX, nextBoxY + nextBoxHeight + 80);
 
   // Отображение статуса "Auto Play"
   const autoPlayText = 'Auto Play';
   context.fillStyle = autoPlay ? COLORS.GREEN : COLORS.RED;
-  context.fillText(autoPlayText, nextBoxX, nextBoxY + 220);
+  context.fillText(autoPlayText, nextBoxX, nextBoxY + nextBoxHeight + 120);
 
   // Сохранение области текста для клика
   const autoPlayMetrics = context.measureText(autoPlayText);
   const autoPlayRect = {
     x: nextBoxX,
-    y: nextBoxY + 200,
+    y: nextBoxY + nextBoxHeight + 100,
     width: autoPlayMetrics.width,
-    height: 30,
+    height: BLOCK_SIZE,
   };
 
   return autoPlayRect;
 }
 
-// Функция для проверки столкновений
-export function checkCollision(grid, shape, offsetX, offsetY) {
-  for (let y = 0; y < shape.length; y++) {
-    for (let x = 0; x < shape[y].length; x++) {
-      if (shape[y][x]) {
-        if (
-          offsetY + y >= grid.length ||
-          offsetX + x < 0 ||
-          offsetX + x >= grid[0].length ||
-          grid[offsetY + y][offsetX + x] !== COLORS.BLACK
-        ) {
-          return true;
-        }
-      }
-    }
-  }
-  return false;
-}
+// Функция для отрисовки кнопки паузы
+export function drawPauseButton(context) {
+  context.font = `${BLOCK_SIZE}px Comic Sans MS`;
+  context.fillStyle = COLORS.WHITE;
+  const pauseText = 'Pause';
+  const pauseMetrics = context.measureText(pauseText);
+  const pauseX = WIDTH - pauseMetrics.width - 20;
+  const pauseY = GRID_Y_OFFSET + 30;
+  context.fillText(pauseText, pauseX, pauseY);
 
-// Функция для слияния фигуры с сеткой
-export function mergeShape(grid, shape, offsetX, offsetY, color) {
-  for (let y = 0; y < shape.length; y++) {
-    for (let x = 0; x < shape[y].length; x++) {
-      if (shape[y][x]) {
-        const gridY = offsetY + y;
-        const gridX = offsetX + x;
-        if (gridY >= 0 && gridY < grid.length && gridX >= 0 && gridX < grid[0].length) {
-          grid[gridY][gridX] = color;
-        }
-      }
-    }
-  }
-}
+  const pauseRect = {
+    x: pauseX,
+    y: pauseY - BLOCK_SIZE,
+    width: pauseMetrics.width,
+    height: BLOCK_SIZE,
+  };
 
-// Функция для очистки полных линий
-export function clearLines(grid) {
-  let linesCleared = 0;
-  for (let y = grid.length - 1; y >= 0; y--) {
-    if (grid[y].every(cell => cell !== COLORS.BLACK)) {
-      grid.splice(y, 1);
-      grid.unshift(new Array(grid[0].length).fill(COLORS.BLACK));
-      linesCleared++;
-      y++; // Проверяем новую строку на том же месте
-    }
-  }
-  return linesCleared;
+  return pauseRect;
 }
 
 // Функция для отрисовки главного меню
@@ -156,7 +143,7 @@ export function drawMenu(context) {
   context.fillStyle = COLORS.BLACK;
   context.fillRect(0, 0, WIDTH, HEIGHT);
 
-  context.font = '36px Comic Sans MS';
+  context.font = `${BLOCK_SIZE * 1.5}px Comic Sans MS`;
   context.fillStyle = COLORS.WHITE;
   context.textAlign = 'center';
 
@@ -183,21 +170,21 @@ export function drawMenu(context) {
 
   const arcadeRect = {
     x: WIDTH / 2 - arcadeMetrics.width / 2,
-    y: arcadeY - 20,
+    y: arcadeY - BLOCK_SIZE,
     width: arcadeMetrics.width,
-    height: 40,
+    height: BLOCK_SIZE * 1.2,
   };
   const endlessRect = {
     x: WIDTH / 2 - endlessMetrics.width / 2,
-    y: endlessY - 20,
+    y: endlessY - BLOCK_SIZE,
     width: endlessMetrics.width,
-    height: 40,
+    height: BLOCK_SIZE * 1.2,
   };
   const settingsRect = {
     x: WIDTH / 2 - settingsMetrics.width / 2,
-    y: settingsY - 20,
+    y: settingsY - BLOCK_SIZE,
     width: settingsMetrics.width,
-    height: 40,
+    height: BLOCK_SIZE * 1.2,
   };
 
   return { arcadeRect, endlessRect, settingsRect };
@@ -208,7 +195,7 @@ export function drawGameOver(context, score, bestScore) {
   context.fillStyle = COLORS.BLACK;
   context.fillRect(0, 0, WIDTH, HEIGHT);
 
-  context.font = '36px Comic Sans MS';
+  context.font = `${BLOCK_SIZE * 1.5}px Comic Sans MS`;
   context.fillStyle = COLORS.WHITE;
   context.textAlign = 'center';
 
@@ -223,104 +210,20 @@ export function drawGameOver(context, score, bestScore) {
   const tryAgainMetrics = context.measureText(tryAgainText);
   const tryAgainRect = {
     x: WIDTH / 2 - tryAgainMetrics.width / 2,
-    y: HEIGHT / 2 + 80 - 30,
+    y: HEIGHT / 2 + 80 - BLOCK_SIZE,
     width: tryAgainMetrics.width,
-    height: 40,
+    height: BLOCK_SIZE * 1.2,
   };
 
   return { tryAgainRect };
 }
 
-// Функция для отрисовки кнопок управления (стрелки и поворот)
-export function drawControls(context) {
-  context.font = '60px Comic Sans MS'; // Увеличен размер шрифта
-  context.fillStyle = COLORS.WHITE;
-  context.textAlign = 'center';
-
-  const leftArrow = '◀';
-  const rightArrow = '▶';
-  const rotateArrow = '⟳';
-  const downArrow = '▼';
-
-  // Перемещаем кнопки ниже
-  const controlAreaY = HEIGHT + 100;
-
-  const centerX = WIDTH / 2;
-
-  const spacing = 100; // Увеличен интервал между кнопками
-
-  const leftX = centerX - spacing * 1.5;
-  const rotateX = centerX;
-  const rightX = centerX + spacing * 1.5;
-  const downX = centerX;
-
-  // Отрисовка кнопок
-  context.fillText(leftArrow, leftX, controlAreaY);
-  context.fillText(rotateArrow, rotateX, controlAreaY);
-  context.fillText(rightArrow, rightX, controlAreaY);
-  context.fillText(downArrow, downX, controlAreaY + 80); // Смещаем кнопку вниз ниже
-
-  // Измерение размеров текста для определения областей клика
-  const leftMetrics = context.measureText(leftArrow);
-  const rotateMetrics = context.measureText(rotateArrow);
-  const rightMetrics = context.measureText(rightArrow);
-  const downMetrics = context.measureText(downArrow);
-
-  // Обновление областей клика с учётом нового размера шрифта и положения
-  const leftArrowRect = {
-    x: leftX - 30,
-    y: controlAreaY - 50,
-    width: 60,
-    height: 60,
-  };
-  const rotateArrowRect = {
-    x: rotateX - 30,
-    y: controlAreaY - 50,
-    width: 60,
-    height: 60,
-  };
-  const rightArrowRect = {
-    x: rightX - 30,
-    y: controlAreaY - 50,
-    width: 60,
-    height: 60,
-  };
-  const downArrowRect = {
-    x: downX - 30,
-    y: controlAreaY + 30,
-    width: 60,
-    height: 60,
-  };
-
-  return { leftArrowRect, rotateArrowRect, rightArrowRect, downArrowRect };
-}
-
-// Функция для отрисовки кнопки паузы
-export function drawPauseButton(context) {
-  context.font = '24px Comic Sans MS';
-  context.fillStyle = COLORS.WHITE;
-  const pauseText = 'Pause';
-  const pauseMetrics = context.measureText(pauseText);
-  const pauseX = WIDTH - pauseMetrics.width - 10;
-  const pauseY = HEIGHT + 140;
-  context.fillText(pauseText, pauseX, pauseY);
-
-  const pauseRect = {
-    x: pauseX,
-    y: pauseY - 20,
-    width: pauseMetrics.width,
-    height: 30,
-  };
-
-  return pauseRect;
-}
-
 // Функция для отрисовки меню паузы
 export function drawPauseMenu(context) {
   context.fillStyle = 'rgba(0, 0, 0, 0.8)';
-  context.fillRect(0, 0, WIDTH, HEIGHT + 150);
+  context.fillRect(0, 0, WIDTH, HEIGHT);
 
-  context.font = '36px Comic Sans MS';
+  context.font = `${BLOCK_SIZE * 1.2}px Comic Sans MS`;
   context.fillStyle = COLORS.WHITE;
   context.textAlign = 'center';
 
@@ -338,15 +241,15 @@ export function drawPauseMenu(context) {
 
   const resumeRect = {
     x: WIDTH / 2 - resumeMetrics.width / 2,
-    y: resumeY - 20,
+    y: resumeY - BLOCK_SIZE,
     width: resumeMetrics.width,
-    height: 40,
+    height: BLOCK_SIZE * 1.2,
   };
   const exitRect = {
     x: WIDTH / 2 - exitMetrics.width / 2,
-    y: exitY - 20,
+    y: exitY - BLOCK_SIZE,
     width: exitMetrics.width,
-    height: 40,
+    height: BLOCK_SIZE * 1.2,
   };
 
   return { resumeRect, exitRect };
@@ -357,7 +260,7 @@ export function drawSettingsMenu(context, softGuaranteeEnabled) {
   context.fillStyle = COLORS.BLACK;
   context.fillRect(0, 0, WIDTH, HEIGHT);
 
-  context.font = '36px Comic Sans MS';
+  context.font = `${BLOCK_SIZE * 1.2}px Comic Sans MS`;
   context.fillStyle = softGuaranteeEnabled ? COLORS.GREEN : COLORS.RED;
   context.textAlign = 'center';
 
@@ -376,15 +279,15 @@ export function drawSettingsMenu(context, softGuaranteeEnabled) {
 
   const softGuaranteeRect = {
     x: WIDTH / 2 - softMetrics.width / 2,
-    y: softY - 20,
+    y: softY - BLOCK_SIZE,
     width: softMetrics.width,
-    height: 40,
+    height: BLOCK_SIZE * 1.2,
   };
   const returnRect = {
     x: WIDTH / 2 - returnMetrics.width / 2,
-    y: returnY - 20,
+    y: returnY - BLOCK_SIZE,
     width: returnMetrics.width,
-    height: 40,
+    height: BLOCK_SIZE * 1.2,
   };
 
   return { softGuaranteeRect, returnRect };
@@ -402,6 +305,61 @@ export function rotateMatrix(matrix) {
     }
   }
   return rotated;
+}
+
+// Функция для проверки столкновений
+export function checkCollision(grid, shape, offsetX, offsetY) {
+  for (let y = 0; y < shape.length; y++) {
+    for (let x = 0; x < shape[y].length; x++) {
+      if (shape[y][x]) {
+        const newX = offsetX + x;
+        const newY = offsetY + y;
+        if (
+          newX < 0 ||
+          newX >= grid[0].length ||
+          newY >= grid.length ||
+          (newY >= 0 && grid[newY][newX] !== COLORS.BLACK)
+        ) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+// Функция для слияния фигуры с сеткой
+export function mergeShape(grid, shape, offsetX, offsetY, color) {
+  for (let y = 0; y < shape.length; y++) {
+    for (let x = 0; x < shape[y].length; x++) {
+      if (shape[y][x]) {
+        const newX = offsetX + x;
+        const newY = offsetY + y;
+        if (newY >= 0 && newY < grid.length && newX >= 0 && newX < grid[0].length) {
+          grid[newY][newX] = color;
+        }
+      }
+    }
+  }
+}
+
+// Функция для очистки полных линий
+export function clearLines(grid) {
+  let linesCleared = 0;
+  outer: for (let y = grid.length - 1; y >= 0; y--) {
+    for (let x = 0; x < grid[y].length; x++) {
+      if (grid[y][x] === COLORS.BLACK) {
+        continue outer;
+      }
+    }
+    // Удаляем полную линию
+    grid.splice(y, 1);
+    // Добавляем новую пустую линию сверху
+    grid.unshift(Array(grid[0].length).fill(COLORS.BLACK));
+    linesCleared++;
+    y++; // Проверяем ту же строку снова, так как она сдвинулась вниз
+  }
+  return linesCleared;
 }
 
 // Функции для автоигры
@@ -550,4 +508,3 @@ export function findBestMove(grid, shape, color) {
 
   return { bestX, bestRotation };
 }
-

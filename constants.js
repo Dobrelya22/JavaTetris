@@ -1,11 +1,13 @@
 // constants.js
 
-// Размеры экрана
-export const WIDTH = 500;
-export const HEIGHT = 600;
-export const GRID_WIDTH = 300;
-export const GRID_HEIGHT = 600;
-export const BLOCK_SIZE = 30;
+// Получаем размер экрана
+export const WIDTH = window.innerWidth;
+export const HEIGHT = window.innerHeight;
+
+// Определяем размеры сетки относительно высоты экрана
+export const GRID_HEIGHT = HEIGHT * 0.9; // 90% высоты экрана
+export const BLOCK_SIZE = GRID_HEIGHT / 20; // 20 рядов по высоте
+export const GRID_WIDTH = BLOCK_SIZE * 10; // 10 колонок по ширине
 
 // Цвета
 export const COLORS = {
