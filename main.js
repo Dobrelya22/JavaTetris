@@ -24,7 +24,7 @@ import {
 const canvas = document.getElementById('gameCanvas');
 const context = canvas.getContext('2d');
 canvas.width = WIDTH;
-canvas.height = HEIGHT + 250; // Увеличиваем высоту для размещения кнопок управления
+canvas.height = HEIGHT + 200; // Увеличиваем высоту для размещения кнопок управления
 
 let grid;
 let currentShape;
