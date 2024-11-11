@@ -11,21 +11,20 @@ import {
   clearLines,
   drawMenu,
   drawGameOver,
+  drawControls,
   drawPauseButton,
   drawPauseMenu,
   drawSettingsMenu,
   rotateMatrix,
+  evaluateBoard,
+  getRotations,
   findBestMove,
-  GRID_X_OFFSET,
-  GRID_Y_OFFSET,
 } from './utils.js';
 
 const canvas = document.getElementById('gameCanvas');
 const context = canvas.getContext('2d');
-
-// Устанавливаем размеры холста
 canvas.width = WIDTH;
-canvas.height = HEIGHT;
+canvas.height = HEIGHT + 250; // Увеличиваем высоту для размещения кнопок управления
 
 let grid;
 let currentShape;
@@ -63,12 +62,12 @@ let touchStartTime = 0;
 resetGameVariables();
 
 function resetGameVariables() {
-  const rows = GRID_ROWS;
-  const cols = GRID_COLUMNS;
-  grid = Array.from({ length: rows }, () => Array(cols).fill(COLORS.BLACK));
+  grid = Array.from({ length: GRID_HEIGHT / BLOCK_SIZE }, () =>
+    Array(GRID_WIDTH / BLOCK_SIZE).fill(COLORS.BLACK)
+  );
   currentShape = getNextShape();
   nextShape = getNextShape();
-  currentX = Math.floor(cols / 2) - Math.floor(currentShape.shape[0].length / 2);
+  currentX = Math.floor((GRID_WIDTH / BLOCK_SIZE) / 2) - Math.floor(currentShape.shape[0].length / 2);
   currentY = 0;
   score = 0;
   level = 1;
@@ -111,9 +110,7 @@ canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
 document.addEventListener('keydown', handleKeyDown);
 
 function handleMouseDown(event) {
-  const rect = canvas.getBoundingClientRect();
-  const mouseX = event.clientX - rect.left;
-  const mouseY = event.clientY - rect.top;
+  const { offsetX: mouseX, offsetY: mouseY } = event;
   if (menu) {
     handleMenuClick(mouseX, mouseY);
   } else if (settingsMenu) {
@@ -174,12 +171,32 @@ function handleGameOverClick(mouseX, mouseY) {
 
 function handleGameClick(mouseX, mouseY) {
   const pauseRect = drawPauseButton(context);
+  const { leftArrowRect, rotateArrowRect, rightArrowRect, downArrowRect } = drawControls(context);
   const autoPlayRect = drawNextShape(context, nextShape.shape, nextShape.color, score, autoPlay, level);
 
   if (isPointInRect(mouseX, mouseY, pauseRect)) {
-    paused = !paused;
+    paused = true;
   } else if (isPointInRect(mouseX, mouseY, autoPlayRect)) {
     autoPlay = !autoPlay;
+  } else if (!autoPlay) {
+    if (isPointInRect(mouseX, mouseY, leftArrowRect)) {
+      if (!checkCollision(grid, currentShape.shape, currentX - 1, currentY)) {
+        currentX--;
+      }
+    } else if (isPointInRect(mouseX, mouseY, rightArrowRect)) {
+      if (!checkCollision(grid, currentShape.shape, currentX + 1, currentY)) {
+        currentX++;
+      }
+    } else if (isPointInRect(mouseX, mouseY, downArrowRect)) {
+      if (!checkCollision(grid, currentShape.shape, currentX, currentY + 1)) {
+        currentY++;
+      }
+    } else if (isPointInRect(mouseX, mouseY, rotateArrowRect)) {
+      const rotatedShape = rotateMatrix(currentShape.shape);
+      if (!checkCollision(grid, rotatedShape, currentX, currentY)) {
+        currentShape.shape = rotatedShape;
+      }
+    }
   }
 }
 
@@ -234,7 +251,7 @@ function handleTouchStart(event) {
 
   if (menu || settingsMenu || paused || gameOver) {
     // Если игра в меню, обрабатываем как клик мыши
-    handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY });
+    handleMouseDown({ offsetX: touchX, offsetY: touchY });
   } else {
     if (isTouchOnPiece(touchX, touchY)) {
       isTouchingPiece = true;
@@ -243,9 +260,6 @@ function handleTouchStart(event) {
       lastTouchX = touchX;
       lastTouchY = touchY;
       touchStartTime = event.timeStamp;
-    } else {
-      // Проверяем, нажал ли пользователь на кнопки паузы или автоигры
-      handleGameClick(touchX, touchY);
     }
   }
 }
@@ -255,35 +269,20 @@ function handleTouchMove(event) {
   if (isTouchingPiece && !autoPlay) {
     const touch = event.touches[0];
     const touchX = touch.clientX - canvas.getBoundingClientRect().left;
-    const touchY = touch.clientY - canvas.getBoundingClientRect().top;
     const deltaX = touchX - lastTouchX;
-    const deltaY = touchY - lastTouchY;
 
-    const horizontalThreshold = BLOCK_SIZE / 2;
-    const verticalThreshold = BLOCK_SIZE / 2;
-
-    if (deltaX > horizontalThreshold) {
+    if (deltaX > BLOCK_SIZE) {
       // Двигаем фигуру вправо
       if (!checkCollision(grid, currentShape.shape, currentX + 1, currentY)) {
         currentX++;
       }
       lastTouchX = touchX;
-    } else if (deltaX < -horizontalThreshold) {
+    } else if (deltaX < -BLOCK_SIZE) {
       // Двигаем фигуру влево
       if (!checkCollision(grid, currentShape.shape, currentX - 1, currentY)) {
         currentX--;
       }
       lastTouchX = touchX;
-    }
-
-    if (deltaY > verticalThreshold) {
-      // Двигаем фигуру вниз
-      if (!checkCollision(grid, currentShape.shape, currentX, currentY + 1)) {
-        currentY++;
-        lastTouchY = touchY;
-        // Сбрасываем таймер падения, чтобы фигура не падала снова сразу
-        lastFallTime = Date.now();
-      }
     }
   }
 }
@@ -308,8 +307,8 @@ function handleTouchEnd(event) {
 }
 
 function isTouchOnPiece(touchX, touchY) {
-  const gridX = Math.floor((touchX - GRID_X_OFFSET) / BLOCK_SIZE);
-  const gridY = Math.floor((touchY - GRID_Y_OFFSET) / BLOCK_SIZE);
+  const gridX = Math.floor((touchX - 50) / BLOCK_SIZE);
+  const gridY = Math.floor(touchY / BLOCK_SIZE);
 
   for (let y = 0; y < currentShape.shape.length; y++) {
     for (let x = 0; x < currentShape.shape[y].length; x++) {
@@ -341,11 +340,12 @@ function gameLoop() {
     context.fillStyle = COLORS.BLACK;
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.strokeStyle = COLORS.WHITE;
-    context.strokeRect(GRID_X_OFFSET, GRID_Y_OFFSET, GRID_WIDTH, GRID_HEIGHT);
+    context.strokeRect(50, 0, GRID_WIDTH, GRID_HEIGHT);
 
     drawGrid(context, grid);
     const autoPlayRect = drawNextShape(context, nextShape.shape, nextShape.color, score, autoPlay, level);
     const pauseRect = drawPauseButton(context);
+    const { leftArrowRect, rotateArrowRect, rightArrowRect, downArrowRect } = drawControls(context);
 
     if (autoPlay) {
       // Логика автоигры с имитацией действий игрока
@@ -431,7 +431,7 @@ function calculateScore(linesCleared) {
 function prepareNextShape() {
   currentShape = nextShape;
   nextShape = getNextShape();
-  currentX = Math.floor(GRID_COLUMNS / 2) - Math.floor(currentShape.shape[0].length / 2);
+  currentX = Math.floor((GRID_WIDTH / BLOCK_SIZE) / 2) - Math.floor(currentShape.shape[0].length / 2);
   currentY = 0;
   if (checkCollision(grid, currentShape.shape, currentX, currentY)) {
     gameOver = true;
@@ -466,5 +466,6 @@ function calculateAutoMoves(currentShape, currentX, bestRotation, bestX) {
 }
 
 gameLoop();
+
 
 
