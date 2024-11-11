@@ -51,6 +51,14 @@ let autoMoveSteps = [];
 let autoLastMoveTime = Date.now();
 let autoMoveDelay = 50; // Задержка между автоматическими перемещениями (мс)
 
+// Переменные для сенсорного управления
+let isTouchingPiece = false;
+let touchStartX = 0;
+let touchStartY = 0;
+let lastTouchX = 0;
+let lastTouchY = 0;
+let touchStartTime = 0;
+
 resetGameVariables();
 
 function resetGameVariables() {
@@ -96,6 +104,9 @@ function getRandomColor() {
 }
 
 canvas.addEventListener('mousedown', handleMouseDown);
+canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
 document.addEventListener('keydown', handleKeyDown);
 
 function handleMouseDown(event) {
@@ -231,6 +242,86 @@ function handlePlayerInput(event) {
   }
 }
 
+// Обработка сенсорных событий
+function handleTouchStart(event) {
+  event.preventDefault();
+  const touch = event.touches[0];
+  const touchX = touch.clientX - canvas.getBoundingClientRect().left;
+  const touchY = touch.clientY - canvas.getBoundingClientRect().top;
+
+  if (menu || settingsMenu || paused || gameOver) {
+    // Если игра в меню, обрабатываем как клик мыши
+    handleMouseDown({ offsetX: touchX, offsetY: touchY });
+  } else {
+    if (isTouchOnPiece(touchX, touchY)) {
+      isTouchingPiece = true;
+      touchStartX = touchX;
+      touchStartY = touchY;
+      lastTouchX = touchX;
+      lastTouchY = touchY;
+      touchStartTime = event.timeStamp;
+    }
+  }
+}
+
+function handleTouchMove(event) {
+  event.preventDefault();
+  if (isTouchingPiece && !autoPlay) {
+    const touch = event.touches[0];
+    const touchX = touch.clientX - canvas.getBoundingClientRect().left;
+    const deltaX = touchX - lastTouchX;
+
+    if (deltaX > BLOCK_SIZE) {
+      // Двигаем фигуру вправо
+      if (!checkCollision(grid, currentShape.shape, currentX + 1, currentY)) {
+        currentX++;
+      }
+      lastTouchX = touchX;
+    } else if (deltaX < -BLOCK_SIZE) {
+      // Двигаем фигуру влево
+      if (!checkCollision(grid, currentShape.shape, currentX - 1, currentY)) {
+        currentX--;
+      }
+      lastTouchX = touchX;
+    }
+  }
+}
+
+function handleTouchEnd(event) {
+  event.preventDefault();
+  if (isTouchingPiece) {
+    const touchDuration = event.timeStamp - touchStartTime;
+    const deltaX = lastTouchX - touchStartX;
+    const deltaY = lastTouchY - touchStartY;
+
+    if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10 && touchDuration < 300) {
+      // Если касание было коротким и без значительного движения, считаем это нажатием для поворота
+      const rotatedShape = rotateMatrix(currentShape.shape);
+      if (!checkCollision(grid, rotatedShape, currentX, currentY)) {
+        currentShape.shape = rotatedShape;
+      }
+    }
+
+    isTouchingPiece = false;
+  }
+}
+
+function isTouchOnPiece(touchX, touchY) {
+  const gridX = Math.floor((touchX - 50) / BLOCK_SIZE);
+  const gridY = Math.floor(touchY / BLOCK_SIZE);
+
+  for (let y = 0; y < currentShape.shape.length; y++) {
+    for (let x = 0; x < currentShape.shape[y].length; x++) {
+      if (currentShape.shape[y][x]) {
+        if (currentX + x === gridX && currentY + y === gridY) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
 function gameLoop() {
   const currentTime = Date.now();
 
@@ -347,7 +438,7 @@ function prepareNextShape() {
   }
 }
 
-// Новая функция для вычисления шагов автоигры
+// Функция для вычисления шагов автоигры
 function calculateAutoMoves(currentShape, currentX, bestRotation, bestX) {
   const moves = [];
   let tempShape = currentShape;
@@ -375,4 +466,5 @@ function calculateAutoMoves(currentShape, currentX, bestRotation, bestX) {
 }
 
 gameLoop();
+
 
