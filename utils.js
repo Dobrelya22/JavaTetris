@@ -1,10 +1,6 @@
 // utils.js
 
-import { WIDTH, HEIGHT, GRID_WIDTH, GRID_HEIGHT, BLOCK_SIZE, COLORS } from './constants.js';
-
-// Определяем смещения для сетки
-export const GRID_X_OFFSET = (WIDTH - GRID_WIDTH) / 2;
-export const GRID_Y_OFFSET = (HEIGHT - GRID_HEIGHT) / 2;
+import { WIDTH, HEIGHT, GRID_WIDTH, GRID_HEIGHT, BLOCK_SIZE, COLORS, GRID_X_OFFSET, GRID_Y_OFFSET } from './constants.js';
 
 // Функция для отрисовки сетки
 export function drawGrid(context, grid) {
@@ -54,10 +50,11 @@ export function drawShape(context, shape, color, offsetX, offsetY) {
 
 // Функция для отрисовки следующей фигуры и информации
 export function drawNextShape(context, shape, color, score, autoPlay, level) {
-  const nextBoxWidth = GRID_WIDTH * 0.4;
-  const nextBoxHeight = nextBoxWidth;
+  // Вычисляем позицию для следующей фигуры и информации
   const nextBoxX = GRID_X_OFFSET + GRID_WIDTH + 20;
   const nextBoxY = GRID_Y_OFFSET;
+  const nextBoxWidth = WIDTH - nextBoxX - 20; // Оставляем 20px отступа справа
+  const nextBoxHeight = nextBoxWidth; // Квадратный блок
 
   context.strokeStyle = COLORS.WHITE;
   context.strokeRect(nextBoxX, nextBoxY, nextBoxWidth, nextBoxHeight);
@@ -69,24 +66,24 @@ export function drawNextShape(context, shape, color, score, autoPlay, level) {
   context.fillText('NEXT', nextBoxX + nextBoxWidth / 2, nextBoxY - 10);
 
   // Отрисовка следующей фигуры
-  const shapeScale = BLOCK_SIZE * 0.8;
-  const offsetX = (nextBoxWidth - shape[0].length * shapeScale) / 2;
-  const offsetY = (nextBoxHeight - shape.length * shapeScale) / 2;
+  const shapeScale = Math.min(nextBoxWidth / shape[0].length, nextBoxHeight / shape.length);
+  const offsetX = nextBoxX + (nextBoxWidth - shape[0].length * shapeScale) / 2;
+  const offsetY = nextBoxY + (nextBoxHeight - shape.length * shapeScale) / 2;
 
   for (let y = 0; y < shape.length; y++) {
     for (let x = 0; x < shape[y].length; x++) {
       if (shape[y][x]) {
         context.fillStyle = color;
         context.fillRect(
-          nextBoxX + offsetX + x * shapeScale,
-          nextBoxY + offsetY + y * shapeScale,
+          offsetX + x * shapeScale,
+          offsetY + y * shapeScale,
           shapeScale,
           shapeScale
         );
         context.strokeStyle = COLORS.WHITE;
         context.strokeRect(
-          nextBoxX + offsetX + x * shapeScale,
-          nextBoxY + offsetY + y * shapeScale,
+          offsetX + x * shapeScale,
+          offsetY + y * shapeScale,
           shapeScale,
           shapeScale
         );
@@ -98,19 +95,20 @@ export function drawNextShape(context, shape, color, score, autoPlay, level) {
   context.fillStyle = COLORS.WHITE;
   context.textAlign = 'left';
   context.font = `${BLOCK_SIZE * 0.8}px Comic Sans MS`;
-  context.fillText(`SCORE: ${score}`, nextBoxX, nextBoxY + nextBoxHeight + 40);
-  context.fillText(`LEVEL: ${level}`, nextBoxX, nextBoxY + nextBoxHeight + 80);
+  const infoYStart = nextBoxY + nextBoxHeight + 20;
+  context.fillText(`SCORE: ${score}`, nextBoxX, infoYStart);
+  context.fillText(`LEVEL: ${level}`, nextBoxX, infoYStart + BLOCK_SIZE);
 
   // Отображение статуса "Auto Play"
   const autoPlayText = 'Auto Play';
   context.fillStyle = autoPlay ? COLORS.GREEN : COLORS.RED;
-  context.fillText(autoPlayText, nextBoxX, nextBoxY + nextBoxHeight + 120);
+  context.fillText(autoPlayText, nextBoxX, infoYStart + BLOCK_SIZE * 2);
 
   // Сохранение области текста для клика
   const autoPlayMetrics = context.measureText(autoPlayText);
   const autoPlayRect = {
     x: nextBoxX,
-    y: nextBoxY + nextBoxHeight + 100,
+    y: infoYStart + BLOCK_SIZE * 2 - BLOCK_SIZE,
     width: autoPlayMetrics.width,
     height: BLOCK_SIZE,
   };
@@ -125,7 +123,7 @@ export function drawPauseButton(context) {
   const pauseText = 'Pause';
   const pauseMetrics = context.measureText(pauseText);
   const pauseX = WIDTH - pauseMetrics.width - 20;
-  const pauseY = GRID_Y_OFFSET + 30;
+  const pauseY = GRID_Y_OFFSET + BLOCK_SIZE;
   context.fillText(pauseText, pauseX, pauseY);
 
   const pauseRect = {

@@ -63,8 +63,8 @@ let touchStartTime = 0;
 resetGameVariables();
 
 function resetGameVariables() {
-  const rows = GRID_HEIGHT / BLOCK_SIZE;
-  const cols = GRID_WIDTH / BLOCK_SIZE;
+  const rows = GRID_ROWS;
+  const cols = GRID_COLUMNS;
   grid = Array.from({ length: rows }, () => Array(cols).fill(COLORS.BLACK));
   currentShape = getNextShape();
   nextShape = getNextShape();
@@ -255,20 +255,35 @@ function handleTouchMove(event) {
   if (isTouchingPiece && !autoPlay) {
     const touch = event.touches[0];
     const touchX = touch.clientX - canvas.getBoundingClientRect().left;
+    const touchY = touch.clientY - canvas.getBoundingClientRect().top;
     const deltaX = touchX - lastTouchX;
+    const deltaY = touchY - lastTouchY;
 
-    if (deltaX > BLOCK_SIZE / 2) {
+    const horizontalThreshold = BLOCK_SIZE / 2;
+    const verticalThreshold = BLOCK_SIZE / 2;
+
+    if (deltaX > horizontalThreshold) {
       // Двигаем фигуру вправо
       if (!checkCollision(grid, currentShape.shape, currentX + 1, currentY)) {
         currentX++;
       }
       lastTouchX = touchX;
-    } else if (deltaX < -BLOCK_SIZE / 2) {
+    } else if (deltaX < -horizontalThreshold) {
       // Двигаем фигуру влево
       if (!checkCollision(grid, currentShape.shape, currentX - 1, currentY)) {
         currentX--;
       }
       lastTouchX = touchX;
+    }
+
+    if (deltaY > verticalThreshold) {
+      // Двигаем фигуру вниз
+      if (!checkCollision(grid, currentShape.shape, currentX, currentY + 1)) {
+        currentY++;
+        lastTouchY = touchY;
+        // Сбрасываем таймер падения, чтобы фигура не падала снова сразу
+        lastFallTime = Date.now();
+      }
     }
   }
 }
@@ -416,7 +431,7 @@ function calculateScore(linesCleared) {
 function prepareNextShape() {
   currentShape = nextShape;
   nextShape = getNextShape();
-  currentX = Math.floor((GRID_WIDTH / BLOCK_SIZE) / 2) - Math.floor(currentShape.shape[0].length / 2);
+  currentX = Math.floor(GRID_COLUMNS / 2) - Math.floor(currentShape.shape[0].length / 2);
   currentY = 0;
   if (checkCollision(grid, currentShape.shape, currentX, currentY)) {
     gameOver = true;
