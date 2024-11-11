@@ -1,6 +1,4 @@
-// main.js
-
-import { WIDTH, HEIGHT, GRID_WIDTH, GRID_HEIGHT, BLOCK_SIZE, COLORS, COLOR_LIST } from './constants.js';
+import { GRID_WIDTH, GRID_HEIGHT, BLOCK_SIZE, COLORS, COLOR_LIST } from './constants.js';
 import { SHAPES } from './shapes.js';
 import {
   drawGrid,
@@ -23,8 +21,15 @@ import {
 
 const canvas = document.getElementById('gameCanvas');
 const context = canvas.getContext('2d');
-canvas.width = WIDTH;
-canvas.height = HEIGHT + 200; // Увеличиваем высоту для размещения кнопок управления
+
+canvas.width = window.innerWidth;  // Подстраиваем ширину под размер окна
+canvas.height = window.innerHeight; // Подстраиваем высоту под размер окна
+
+const WIDTH = canvas.width;
+const HEIGHT = canvas.height;
+
+// Проверим размеры
+console.log("WIDTH:", WIDTH, "HEIGHT:", HEIGHT);
 
 let grid;
 let currentShape;
@@ -44,13 +49,11 @@ let linesClearedTotal = 0;
 let softGuaranteeEnabled = false;
 let iPieceCounter = 0;
 let lastFallTime = Date.now();
-let fallSpeed = 500; // Миллисекунды между падениями
+let fallSpeed = 500;
 let autoFallSpeed = 50;
-
-// Добавляем переменные для автоигры
 let autoMoveSteps = [];
 let autoLastMoveTime = Date.now();
-let autoMoveDelay = 10; // Задержка между автоматическими перемещениями (мс)
+let autoMoveDelay = 10;
 
 resetGameVariables();
 
