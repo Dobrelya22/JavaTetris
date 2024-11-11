@@ -233,7 +233,7 @@ export function drawGameOver(context, score, bestScore) {
 
 // Функция для отрисовки кнопок управления (стрелки и поворот)
 export function drawControls(context) {
-  context.font = '36px Comic Sans MS';
+  context.font = '60px Comic Sans MS'; // Увеличен размер шрифта с 36px до 60px
   context.fillStyle = COLORS.WHITE;
   context.textAlign = 'center';
 
@@ -242,50 +242,54 @@ export function drawControls(context) {
   const rotateArrow = '⟳';
   const downArrow = '▼';
 
-  const controlAreaY = HEIGHT + 50;
+  // Перемещаем кнопки ниже
+  const controlAreaY = HEIGHT + 100; // Было HEIGHT + 50
 
   const centerX = WIDTH / 2;
 
-  const spacing = 80;
+  const spacing = 100; // Увеличен интервал между кнопками
 
   const leftX = centerX - spacing * 1.5;
   const rotateX = centerX;
   const rightX = centerX + spacing * 1.5;
   const downX = centerX;
 
+  // Отрисовка кнопок
   context.fillText(leftArrow, leftX, controlAreaY);
   context.fillText(rotateArrow, rotateX, controlAreaY);
   context.fillText(rightArrow, rightX, controlAreaY);
-  context.fillText(downArrow, downX, controlAreaY + 50);
+  context.fillText(downArrow, downX, controlAreaY + 80); // Было +50, теперь +80 для отступа
 
+  // Измерение размеров текста для определения областей клика
   const leftMetrics = context.measureText(leftArrow);
   const rotateMetrics = context.measureText(rotateArrow);
   const rightMetrics = context.measureText(rightArrow);
   const downMetrics = context.measureText(downArrow);
 
+  // Обновление областей клика с учётом нового размера шрифта и положения
   const leftArrowRect = {
-    x: leftX - leftMetrics.width / 2,
-    y: controlAreaY - 30,
+    x: leftX - leftMetrics.actualBoundingBoxLeft,
+    y: controlAreaY - leftMetrics.actualBoundingBoxAscent,
     width: leftMetrics.width,
-    height: 40,
+    height: leftMetrics.actualBoundingBoxAscent + leftMetrics.actualBoundingBoxDescent,
   };
   const rotateArrowRect = {
-    x: rotateX - rotateMetrics.width / 2,
-    y: controlAreaY - 30,
+    x: rotateX - rotateMetrics.actualBoundingBoxLeft,
+    y: controlAreaY - rotateMetrics.actualBoundingBoxAscent,
     width: rotateMetrics.width,
-    height: 40,
+    height: rotateMetrics.actualBoundingBoxAscent + rotateMetrics.actualBoundingBoxDescent,
   };
   const rightArrowRect = {
-    x: rightX - rightMetrics.width / 2,
-    y: controlAreaY - 30,
+    x: rightX - rightMetrics.actualBoundingBoxLeft,
+    y: controlAreaY - rightMetrics.actualBoundingBoxAscent,
     width: rightMetrics.width,
-    height: 40,
+    height: rightMetrics.actualBoundingBoxAscent + rightMetrics.actualBoundingBoxDescent,
   };
   const downArrowRect = {
-    x: downX - downMetrics.width / 2,
-    y: controlAreaY + 20,
+    x: downX - downMetrics.actualBoundingBoxLeft,
+    y: controlAreaY + 80 - downMetrics.actualBoundingBoxAscent,
     width: downMetrics.width,
-    height: 40,
+    height: downMetrics.actualBoundingBoxAscent + downMetrics.actualBoundingBoxDescent,
   };
 
   return { leftArrowRect, rotateArrowRect, rightArrowRect, downArrowRect };
