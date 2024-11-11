@@ -233,7 +233,7 @@ export function drawGameOver(context, score, bestScore) {
 
 // Функция для отрисовки кнопок управления (стрелки и поворот)
 export function drawControls(context) {
-  context.font = '36px Comic Sans MS';
+  context.font = '72px Comic Sans MS';
   context.fillStyle = COLORS.WHITE;
   context.textAlign = 'center';
 
@@ -265,30 +265,30 @@ export function drawControls(context) {
 
   const leftArrowRect = {
     x: leftX - leftMetrics.width / 2,
-    y: controlAreaY - 30,
+    y: controlAreaY - 60,
     width: leftMetrics.width * 1.5, // Увеличиваем ширину
-    height: 60, // Увеличиваем высоту
+    height: 90, // Увеличиваем высоту
 };
 
 const rotateArrowRect = {
     x: rotateX - rotateMetrics.width / 2,
-    y: controlAreaY - 80, // Используйте значение, соответствующее новой позиции
+    y: controlAreaY - 110, // Используйте значение, соответствующее новой позиции
     width: rotateMetrics.width * 1.5,
-    height: 60,
+    height: 90,
 };
 
 const rightArrowRect = {
     x: rightX - rightMetrics.width / 2,
-    y: controlAreaY - 30,
+    y: controlAreaY - 60,
     width: rightMetrics.width * 1.5,
-    height: 60,
+    height: 90,
 };
 
 const downArrowRect = {
     x: downX - downMetrics.width / 2,
     y: controlAreaY + 20,
     width: downMetrics.width * 1.5,
-    height: 60,
+    height: 90,
 };
 
   return { leftArrowRect, rotateArrowRect, rightArrowRect, downArrowRect };
