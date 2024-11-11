@@ -163,6 +163,7 @@ export function drawMenu(context) {
   context.fillText('Tetris The Game', WIDTH / 2, HEIGHT / 4);
 
   context.fillStyle = COLORS.GREEN;
+
   const arcadeText = 'Arcade Mode';
   const endlessText = 'Endless Mode';
   const settingsText = 'Settings';
@@ -175,6 +176,7 @@ export function drawMenu(context) {
   context.fillText(endlessText, WIDTH / 2, endlessY);
   context.fillText(settingsText, WIDTH / 2, settingsY);
 
+  // Сохранение областей текста для кликов
   const arcadeMetrics = context.measureText(arcadeText);
   const endlessMetrics = context.measureText(endlessText);
   const settingsMetrics = context.measureText(settingsText);
@@ -231,8 +233,7 @@ export function drawGameOver(context, score, bestScore) {
 
 // Функция для отрисовки кнопок управления (стрелки и поворот)
 export function drawControls(context) {
-  // Размер шрифта теперь зависит от ширины экрана
-  context.font = `${WIDTH / 10}px Comic Sans MS`;
+  context.font = '72px Comic Sans MS';
   context.fillStyle = COLORS.WHITE;
   context.textAlign = 'center';
 
@@ -241,21 +242,22 @@ export function drawControls(context) {
   const rotateArrow = '⟳';
   const downArrow = '▼';
 
-  // Позиции кнопок управления относительно размеров экрана
-  const controlAreaY = HEIGHT * 0.85; // Располагаем кнопки ближе к нижней части экрана
+  const controlAreaY = HEIGHT + 150;
 
-  const leftX = WIDTH * 0.25;
-  const rotateX = WIDTH * 0.5;
-  const rightX = WIDTH * 0.75;
-  const downX = WIDTH * 0.5;
+  const centerX = WIDTH / 2;
 
-  // Отрисовка кнопок управления
+  const spacing = 100;
+
+  const leftX = centerX - spacing * 1.5;
+  const rotateX = centerX;
+  const rightX = centerX + spacing * 1.5;
+  const downX = centerX;
+
   context.fillText(leftArrow, leftX, controlAreaY);
   context.fillText(rotateArrow, rotateX, controlAreaY - 50);
   context.fillText(rightArrow, rightX, controlAreaY);
   context.fillText(downArrow, downX, controlAreaY + 50);
 
-  // Обновление зон клика для каждой кнопки
   const leftMetrics = context.measureText(leftArrow);
   const rotateMetrics = context.measureText(rotateArrow);
   const rightMetrics = context.measureText(rightArrow);
@@ -263,31 +265,31 @@ export function drawControls(context) {
 
   const leftArrowRect = {
     x: leftX - leftMetrics.width / 2,
-    y: controlAreaY - leftMetrics.actualBoundingBoxAscent / 2,
-    width: leftMetrics.width * 1.5,
-    height: leftMetrics.actualBoundingBoxAscent * 1.5,
-  };
+    y: controlAreaY - 60,
+    width: leftMetrics.width * 1.5, // Увеличиваем ширину
+    height: 90, // Увеличиваем высоту
+};
 
-  const rotateArrowRect = {
+const rotateArrowRect = {
     x: rotateX - rotateMetrics.width / 2,
-    y: controlAreaY - 100,
+    y: controlAreaY - 110, // Используйте значение, соответствующее новой позиции
     width: rotateMetrics.width * 1.5,
-    height: rotateMetrics.actualBoundingBoxAscent * 1.5,
-  };
+    height: 90,
+};
 
-  const rightArrowRect = {
+const rightArrowRect = {
     x: rightX - rightMetrics.width / 2,
-    y: controlAreaY - rightMetrics.actualBoundingBoxAscent / 2,
+    y: controlAreaY - 60,
     width: rightMetrics.width * 1.5,
-    height: rightMetrics.actualBoundingBoxAscent * 1.5,
-  };
+    height: 90,
+};
 
-  const downArrowRect = {
+const downArrowRect = {
     x: downX - downMetrics.width / 2,
     y: controlAreaY + 20,
     width: downMetrics.width * 1.5,
-    height: downMetrics.actualBoundingBoxAscent * 1.5,
-  };
+    height: 90,
+};
 
   return { leftArrowRect, rotateArrowRect, rightArrowRect, downArrowRect };
 }
