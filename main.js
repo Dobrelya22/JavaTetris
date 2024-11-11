@@ -45,11 +45,12 @@ let softGuaranteeEnabled = false;
 let iPieceCounter = 0;
 let lastFallTime = Date.now();
 let fallSpeed = 500; // Миллисекунды между падениями
+let autoFallSpeed = 50;
 
 // Добавляем переменные для автоигры
 let autoMoveSteps = [];
 let autoLastMoveTime = Date.now();
-let autoMoveDelay = 50; // Задержка между автоматическими перемещениями (мс)
+let autoMoveDelay = 10; // Задержка между автоматическими перемещениями (мс)
 
 resetGameVariables();
 
@@ -281,7 +282,7 @@ function gameLoop() {
       }
 
       // Фигура падает с обычной скоростью
-      if (currentTime - lastFallTime > fallSpeed) {
+      if (currentTime - lastFallTime > autoFallSpeed) {
         if (!checkCollision(grid, currentShape.shape, currentX, currentY + 1)) {
           currentY++;
         } else {

@@ -242,11 +242,11 @@ export function drawControls(context) {
   const rotateArrow = '⟳';
   const downArrow = '▼';
 
-  const controlAreaY = HEIGHT + 50;
+  const controlAreaY = HEIGHT + 150;
 
   const centerX = WIDTH / 2;
 
-  const spacing = 80;
+  const spacing = 100;
 
   const leftX = centerX - spacing * 1.5;
   const rotateX = centerX;
@@ -254,7 +254,7 @@ export function drawControls(context) {
   const downX = centerX;
 
   context.fillText(leftArrow, leftX, controlAreaY);
-  context.fillText(rotateArrow, rotateX, controlAreaY);
+  context.fillText(rotateArrow, rotateX, controlAreaY - 50);
   context.fillText(rightArrow, rightX, controlAreaY);
   context.fillText(downArrow, downX, controlAreaY + 50);
 
@@ -266,27 +266,30 @@ export function drawControls(context) {
   const leftArrowRect = {
     x: leftX - leftMetrics.width / 2,
     y: controlAreaY - 30,
-    width: leftMetrics.width,
-    height: 40,
-  };
-  const rotateArrowRect = {
+    width: leftMetrics.width * 1.5, // Увеличиваем ширину
+    height: 60, // Увеличиваем высоту
+};
+
+const rotateArrowRect = {
     x: rotateX - rotateMetrics.width / 2,
-    y: controlAreaY - 30,
-    width: rotateMetrics.width,
-    height: 40,
-  };
-  const rightArrowRect = {
+    y: controlAreaY - 80, // Используйте значение, соответствующее новой позиции
+    width: rotateMetrics.width * 1.5,
+    height: 60,
+};
+
+const rightArrowRect = {
     x: rightX - rightMetrics.width / 2,
     y: controlAreaY - 30,
-    width: rightMetrics.width,
-    height: 40,
-  };
-  const downArrowRect = {
+    width: rightMetrics.width * 1.5,
+    height: 60,
+};
+
+const downArrowRect = {
     x: downX - downMetrics.width / 2,
     y: controlAreaY + 20,
-    width: downMetrics.width,
-    height: 40,
-  };
+    width: downMetrics.width * 1.5,
+    height: 60,
+};
 
   return { leftArrowRect, rotateArrowRect, rightArrowRect, downArrowRect };
 }
@@ -298,15 +301,15 @@ export function drawPauseButton(context) {
   const pauseText = 'Pause';
   const pauseMetrics = context.measureText(pauseText);
   const pauseX = WIDTH - pauseMetrics.width - 10;
-  const pauseY = HEIGHT + 140;
+  const pauseY = HEIGHT + 90;
   context.fillText(pauseText, pauseX, pauseY);
 
-  const pauseRect = {
+ const pauseRect = {
     x: pauseX,
-    y: pauseY - 20,
+    y: pauseY - 20, // Обновляем в соответствии с новым значением pauseY
     width: pauseMetrics.width,
     height: 30,
-  };
+};
 
   return pauseRect;
 }
@@ -316,7 +319,7 @@ export function drawPauseMenu(context) {
   context.fillStyle = 'rgba(0, 0, 0, 0.8)';
   context.fillRect(0, 0, WIDTH, HEIGHT + 150);
 
-  context.font = '36px Comic Sans MS';
+  context.font = '48px Comic Sans MS';
   context.fillStyle = COLORS.WHITE;
   context.textAlign = 'center';
 
