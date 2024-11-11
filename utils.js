@@ -478,12 +478,12 @@ export function evaluateBoard(grid) {
 
   // Весовая оценка
   const score =
-    aggregateHeight * 0.5 +
-    holes * 7.0 +
+    aggregateHeight * 0.2 +
+    holes * 10.0 +
     bumpiness * 0.5 +
     maxHeight * 1.0 +
-    wells * 3.0 +
-    centralityPenalty * 0.5 -
+    wells * 1.0 +
+    centralityPenalty * 0.3 -
     completeLines * 4.0;
 
   return score;
